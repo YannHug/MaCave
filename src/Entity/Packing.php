@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PackingRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -26,6 +28,16 @@ class Packing
      * @ORM\Column(type="integer")
      */
     private $quantity;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Bottle::class, mappedBy="pack")
+     */
+    private $bottles;
+
+    public function __construct()
+    {
+        $this->bottles = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -52,6 +64,33 @@ class Packing
     public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Bottle[]
+     */
+    public function getBottles(): Collection
+    {
+        return $this->bottles;
+    }
+
+    public function addBottle(Bottle $bottle): self
+    {
+        if (!$this->bottles->contains($bottle)) {
+            $this->bottles[] = $bottle;
+            $bottle->addPack($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBottle(Bottle $bottle): self
+    {
+        if ($this->bottles->removeElement($bottle)) {
+            $bottle->removePack($this);
+        }
 
         return $this;
     }

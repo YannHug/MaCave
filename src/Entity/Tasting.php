@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TastingRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -26,6 +28,16 @@ class Tasting
      * @ORM\Column(type="text", nullable=true)
      */
     private $opinion;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Bottle::class, mappedBy="tasting")
+     */
+    private $bottles;
+
+    public function __construct()
+    {
+        $this->bottles = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -52,6 +64,33 @@ class Tasting
     public function setOpinion(?string $opinion): self
     {
         $this->opinion = $opinion;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Bottle[]
+     */
+    public function getBottles(): Collection
+    {
+        return $this->bottles;
+    }
+
+    public function addBottle(Bottle $bottle): self
+    {
+        if (!$this->bottles->contains($bottle)) {
+            $this->bottles[] = $bottle;
+            $bottle->addTasting($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBottle(Bottle $bottle): self
+    {
+        if ($this->bottles->removeElement($bottle)) {
+            $bottle->removeTasting($this);
+        }
 
         return $this;
     }
